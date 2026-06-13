@@ -1,0 +1,26 @@
+# Secrets & environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Agent output (recordings, processed video, logs)
+output_data/
+*.mkv
+*.webm
+*.mp4
+*.gif
+logs/
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

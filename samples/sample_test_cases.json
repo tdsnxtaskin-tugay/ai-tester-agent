@@ -1,0 +1,12 @@
+[
+  {
+    "test_case_title": "Search returns relevant results",
+    "feature": "Public docs site search",
+    "instructions": "1. Open the site.\n2. Click the search box.\n3. Type 'getting started' and press Enter.\n4. Verify that at least one search result is shown and that a result mentions 'getting started'."
+  },
+  {
+    "test_case_title": "Navigation to pricing page",
+    "feature": "Primary navigation",
+    "instructions": "1. Open the site.\n2. Locate the main navigation bar.\n3. Click the 'Pricing' link.\n4. Verify the pricing page loads and displays at least one plan or price."
+  }
+]

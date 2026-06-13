@@ -1,0 +1,10 @@
+# Core agent
+browser-use[video]==0.12.6
+openai>=1.12.0,<2.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+lxml
+
+# Foundry IQ — Azure AI Foundry agents + knowledge retrieval
+azure-ai-projects>=1.0.0
+azure-identity>=1.17.0
