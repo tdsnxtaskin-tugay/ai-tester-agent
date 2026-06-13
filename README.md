@@ -1,5 +1,7 @@
 # 🤖 AI Tester Agent
 
+[![CI](https://github.com/tdsnxtaskin-tugay/ai-tester-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/tdsnxtaskin-tugay/ai-tester-agent/actions/workflows/ci.yml)
+
 > An autonomous web-testing agent for the **Microsoft Agents League @ AI Skills Fest 2026** — *Reasoning Agents* track, grounded by **Foundry IQ**.
 
 AI Tester Agent reads natural-language test cases, **drives a real browser** with

@@ -1,0 +1,14 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# Pyflakes (F) + a sensible subset of pycodestyle (E). Keep it pragmatic so CI
+# checks for real problems (unused imports, undefined names) not style nitpicks.
+select = ["E", "F", "W"]
+ignore = [
+    "E501",  # line length is handled by the formatter, not enforced hard
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # re-exports

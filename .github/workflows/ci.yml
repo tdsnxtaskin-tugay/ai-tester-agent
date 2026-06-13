@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Lint & import check
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install lint tooling
+        run: pip install ruff
+
+      - name: Install runtime deps (lightweight subset)
+        # browser-use / playwright are heavy and not needed for import/lint checks
+        # because browser modules import them lazily.
+        run: pip install python-dotenv requests "openai>=1.12.0,<2.0.0" lxml
+
+      - name: Lint (ruff)
+        run: ruff check src scripts
+
+      - name: Byte-compile all modules
+        run: python -m compileall -q src scripts
+
+      - name: Import smoke test
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          import importlib
+          mods = [
+              "config", "prompts", "video", "foundry_iq", "result_matcher",
+              "azure_devops", "test_loader", "llm", "browser_runner", "pipeline",
+              "orchestrator", "agents.base", "agents.planner", "agents.tester",
+              "agents.analyst", "agents.reporter",
+          ]
+          for m in mods:
+              importlib.import_module(f"ai_tester_agent.{m}")
+          print(f"OK: imported {len(mods)} modules")
+          PY
+
+      - name: Collaboration logic smoke test (no browser, no credentials)
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          import asyncio
+          from ai_tester_agent.agents.base import Mission
+          from ai_tester_agent.agents.planner import PlannerAgent
+          from ai_tester_agent.agents.analyst import AnalystAgent
+          from ai_tester_agent.agents.reporter import ReporterAgent
+          from ai_tester_agent.foundry_iq import FoundryIQClient
+          from ai_tester_agent.pipeline import PipelineReport, TestOutcome, TestCase
+          from ai_tester_agent.result_matcher import Verdict
+
+          async def main():
+              m = Mission(goal="Users can search docs and reach pricing",
+                          target_url="https://example.com", report_to_ado=False)
+              await PlannerAgent(None, FoundryIQClient()).act(m)
+              assert m.test_cases, "planner produced no tests"
+              tc1 = TestCase("search", "1. search", "Search")
+              tc2 = TestCase("pricing", "1. click pricing", "Pricing")
+              m.report = PipelineReport(started_at="now", outcomes=[
+                  TestOutcome(tc1, Verdict("Passed", "found results"), grounded=False),
+                  TestOutcome(tc2, Verdict("Failed", "pricing link missing", 3), grounded=False),
+              ])
+              await AnalystAgent(None).act(m)
+              await ReporterAgent(None).act(m)
+              assert m.summary and m.delivery_risk, "missing summary/risk"
+              assert m.messages, "no agent messages recorded"
+              print("OK: multi-agent collaboration logic verified")
+
+          asyncio.run(main())
+          PY
